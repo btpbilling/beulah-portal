@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Beulah Traders Private Limited</title>
+  <style>
+    :root {
+      --primary: #1b5e20;
+      --primary-light: #4c8c4a;
+      --accent: #d4af37;
+      --bg: #f4f6f8;
+      --text: #333;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Falling Flowers Canvas */
+    #flower-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Login Screen */
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1b5e20, #003300);
+    }
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      width: 350px;
+      text-align: center;
+    }
+    .login-card h2 {
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+    .input-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .input-group label {
+      font-size: 12px;
+      font-weight: bold;
+      color: #555;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: var(--primary-light);
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .profile-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+    .btn-signout {
+      background: #c62828;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    /* Dashboard */
+    .dashboard {
+      padding: 20px 40px;
+    }
+    .cards-container {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      flex: 1;
+      border-left: 5px solid var(--primary);
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+    .card p {
+      margin: 10px 0 0;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* SR List and Tabs */
+    .sr-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .sr-card {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .sr-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--primary);
+    }
+
+    /* Category Navigation */
+    .tab-bar {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Table Design */
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+    th {
+      background: var(--primary);
+      color: white;
+      white-space: nowrap;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    .p-cell-highlight {
+      background: #c8e6c9 !important;
+    }
+
+    /* WhatsApp Queue Link */
+    .wa-link {
+      color: #25D366;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="flower-canvas"></canvas>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-view" class="login-container">
+    <div class="login-card">
+      <h2>BEULAH TRADERS PRIVATE LIMITED</h2>
+      <div id="credentials-step">
+        <div class="input-group">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Enter Username">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Enter Password">
+        </div>
+        <button class="btn" onclick="handleLogin()">Send OTP</button>
+      </div>
+
+      <div id="otp-step" style="display:none;">
+        <div class="input-group">
+          <label>Enter Email OTP</label>
+          <input type="text" id="otp-input" placeholder="6-digit OTP">
+        </div>
+        <button class="btn" onclick="verifyOTP()">Verify & Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP PORTAL -->
+  <div id="app-view" style="display:none;">
+    <header>
+      <div>
+        <h2 style="margin:0; font-size: 18px;">BEULAH TRADERS PRIVATE LIMITED</h2>
+      </div>
+      <div class="profile-section">
+        <img id="user-photo" src="" class="profile-img" alt="Profile">
+        <div>
+          <div id="user-name" style="font-weight:bold;"></div>
+          <div id="user-role" style="font-size:11px; opacity:0.8;"></div>
+        </div>
+        <button class="btn-signout" onclick="signOut()">Sign Out</button>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <!-- SUMMARY CARDS -->
+      <div class="cards-container">
+        <div class="card">
+          <h3>TOTAL PAYOUTS</h3>
+          <p id="total-payouts-count">0</p>
+        </div>
+        <div class="card">
+          <h3>TOTAL PAYOUT AMOUNT</h3>
+          <p id="total-payouts-amount">₹0.00</p>
+        </div>
+      </div>
+
+      <!-- SR SELECTION -->
+      <h3>Sales Representatives</h3>
+      <div id="sr-grid" class="sr-grid"></div>
+
+      <!-- CATEGORY TABS -->
+      <div id="category-section" style="display:none; margin-top:30px;">
+        <h3 id="selected-sr-title"></h3>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchCategory('HPBM', event)">HPBM</button>
+          <button class="tab-btn" onclick="switchCategory('CONVERSION', event)">CONVERSION / RENEWAL</button>
+          <button class="tab-btn" onclick="switchCategory('BTP', event)">BTP</button>
+        </div>
+
+        <!-- CONTENT VIEW AREA -->
+        <div id="category-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP DEPLOYMENT URL HERE:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby0VwJGk0xckmZQn3Oy9u2Rirp5T863WHsf9WCAd0p0_c3LPUMYr1CkUAXxyJ0VyCHU/exec";
+
+    let currentUser = null;
+    let selectedSR = null;
+    let currentCategory = 'HPBM';
+
+    // --- FALLING FLOWERS ANIMATION ---
+    const canvas = document.getElementById('flower-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const petals = [];
+    for(let i = 0; i < 30; i++) {
+      petals.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 5 + 2,
+        d: Math.random() * 1,
+        color: 'rgba(255, 182, 193, ' + (Math.random() * 0.8 + 0.2) + ')'
+      });
+    }
+
+    function drawPetals() {
+      ctx.clearRect(0, 0, width, height);
+      petals.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        p.y += Math.cos(p.d) + 1 + p.r / 2;
+        p.x += Math.sin(p.d);
+        if(p.y > height) {
+          p.y = -10;
+          p.x = Math.random() * width;
+        }
+      });
+      requestAnimationFrame(drawPetals);
+    }
+    drawPetals();
+
+    // --- AUTH FLOW VIA FETCH ---
+    function handleLogin() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+
+      fetch(`${WEB_APP_URL}?action=authenticateUser&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
+        .then(res => res.json())
+        .then(res => {
+          if(res.success) {
+            currentUser = res.user;
+            fetch(`${WEB_APP_URL}?action=sendOTP&email=${encodeURIComponent(currentUser.email)}`);
+            document.getElementById('credentials-step').style.display = 'none';
+            document.getElementById('otp-step').style.display = 'block';
+          } else {
+            alert(res.message);
+          }
+        });
+    }
+
+    function verifyOTP() {
+      const otp = document.getElementById('otp-input').value;
+      fetch(`${WEB_APP_URL}?action=verifyOTP&email=${encodeURIComponent(currentUser.email)}&otp=${encodeURIComponent(otp)}`)
+        .then(res => res.json())
+        .then(res => {
+          if(res.success) {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('app-view').style.display = 'block';
+            setupProfile();
+            loadSRList();
+          } else {
+            alert(res.message);
+          }
+        });
+    }
+
+    function setupProfile() {
+      document.getElementById('user-name').innerText = currentUser.name;
+      document.getElementById('user-role').innerText = currentUser.role;
+      document.getElementById('user-photo').src = currentUser.photo || 'https://via.placeholder.com/40';
+    }
+
+    function signOut() {
+      location.reload();
+    }
+
+    // --- MAIN DASHBOARD & SR SELECTION ---
+    function loadSRList() {
+      fetch(`${WEB_APP_URL}?action=getSRList`)
+        .then(res => res.json())
+        .then(list => {
+          const grid = document.getElementById('sr-grid');
+          grid.innerHTML = '';
+          list.forEach(sr => {
+            const card = document.createElement('div');
+            card.className = 'sr-card';
+            card.innerHTML = `<strong>${sr.name}</strong><br><small>ID: ${sr.id}</small>`;
+            card.onclick = () => selectSR(sr);
+            grid.appendChild(card);
+          });
+        });
+    }
+
+    function selectSR(sr) {
+      selectedSR = sr;
+      document.getElementById('category-section').style.display = 'block';
+      document.getElementById('selected-sr-title').innerText = `SR: ${sr.name} (${sr.id})`;
+      switchCategory(currentCategory);
+    }
+
+    function switchCategory(cat, evt) {
+      currentCategory = cat;
+      const btns = document.querySelectorAll('.tab-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      if (evt) evt.target.classList.add('active');
+
+      const content = document.getElementById('category-content');
+      content.innerHTML = '<p>Loading details...</p>';
+
+      if (cat === 'HPBM') renderHPBM();
+      else if (cat === 'CONVERSION') renderRenewal();
+      else if (cat === 'BTP') renderBTP();
+    }
+
+    // --- CATEGORY RENDERERS ---
+    function renderHPBM() {
+      fetch(`${WEB_APP_URL}?action=getHPBMData&sheetName=${encodeURIComponent(selectedSR.fullSheetName)}`)
+        .then(res => res.json())
+        .then(data => {
+          let html = `<h4>15TH PAYMENTS</h4>` + buildHPBMTable(data.day15, '15TH');
+          html += `<h4 style="margin-top:30px;">30TH PAYMENTS</h4>` + buildHPBMTable(data.day30, '30TH');
+          document.getElementById('category-content').innerHTML = html;
+        });
+    }
+
+    function buildHPBMTable(rows, cycle) {
+      if(!rows || !rows.length) return '<p>No data available</p>';
+
+      let totalSumIds = 0;
+      let totalMonthlySum = 0;
+
+      let tableHtml = `<div class="table-container"><table><thead><tr>
+        <th>Customer Name (IDs)</th><th>Relation</th><th>Mobile</th><th>SR Name</th><th>SR ID</th>
+        <th>No of IDs</th><th>Monthly 2% (₹)</th><th>Total New Amt 2%</th><th>SR CN 4%</th>
+        <th>Bank</th><th>Branch</th><th>Acc No</th><th>IFSC</th><th>WhatsApp Msg</th>`;
+
+      for(let i=1; i<=20; i++) tableHtml += `<th>P${i}</th>`;
+      tableHtml += `</tr></thead><tbody>`;
+
+      rows.forEach(r => {
+        totalSumIds += r.totalIds;
+        totalMonthlySum += r.monthly2;
+
+        const waMsg = encodeURIComponent(generateWAMessage(r, cycle));
+        const waUrl = `https://wa.me/91${r.mobile}?text=${waMsg}`;
+
+        tableHtml += `<tr>
+          <td>${r.idsFormatted}</td>
+          <td>${r.relation}</td>
+          <td>${r.mobile}</td>
+          <td>${selectedSR.name}</td>
+          <td>${selectedSR.id}</td>
+          <td>${r.totalIds}</td>
+          <td>₹${r.monthly2.toFixed(2)}</td>
+          <td>₹${r.totalNew2.toFixed(2)}</td>
+          <td>₹${r.srCn4.toFixed(2)}</td>
+          <td>${r.bank}</td>
+          <td>${r.branch}</td>
+          <td>${r.accNo}</td>
+          <td>${r.ifsc}</td>
+          <td><a class="wa-link" href="${waUrl}" target="_blank">Send WA</a></td>`;
+
+        for(let p=1; p<=20; p++) {
+          tableHtml += `<td align="center"><input type="checkbox" onchange="togglePaid(this)"></td>`;
+        }
+        tableHtml += `</tr>`;
+      });
+
+      // Total Row
+      tableHtml += `<tr style="font-weight:bold; background:#e8f5e9;">
+        <td colspan="5">TOTALS</td>
+        <td>${totalSumIds}</td>
+        <td>₹${totalMonthlySum.toFixed(2)}</td>
+        <td colspan="27"></td>
+      </tr></tbody></table></div>`;
+
+      return tableHtml;
+    }
+
+    function togglePaid(cb) {
+      const cell = cb.parentElement;
+      if(cb.checked) {
+        cell.classList.add('p-cell-highlight');
+      } else {
+        cell.classList.remove('p-cell-highlight');
+      }
+    }
+
+    function generateWAMessage(r, cycle) {
+      return `*BEULAH TRADERS PRIVATE LIMITED*\n_GST Registered Company_\n\n*BTP (${cycle} NEW) MONTHLY PAYMENT CREDIT ADVICE*\n\nDear *${r.custName}*,\n\nGreetings from *Beulah Traders Private Limited*.\n\nWe are pleased to inform you that your *BTP (${cycle} NEW) Monthly Payment* has been successfully credited to your registered bank account.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n*Customer Name* : ${r.custName}\n*ID(s)* : ${r.totalIds}\n*Amount Credited* : ₹${r.monthly2.toFixed(2)}\n*Payment Cycle* : ${cycle} NEW\n*Credit Date* : ${new Date().toLocaleDateString()}\n\n*Amount Credited To*\n• Bank : ${r.bank} (${r.branch})\n• Account No. : ${r.accNo}\n• IFSC Code : ${r.ifsc}\n\n*Sales Representative* : ${selectedSR.name}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n*Payment Status* : SUCCESSFUL\n\nYour monthly payment has been credited successfully into your registered bank account under the BTP Scheme.\n\nKindly preserve this message as your official payment confirmation for future reference.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n*Customer Care* : 8978816673\n*WhatsApp* : 8978816673\n\n*C.M.D.* : *Teppali Saidulu*\n\n*BEULAH TRADERS PRIVATE LIMITED*\n*Building Prosperity Together.*\n\n_This is a system-generated payment confirmation from Beulah Traders Private Limited._`;
+    }
+
+    function renderRenewal() {
+      fetch(`${WEB_APP_URL}?action=getRenewalData&srName=${encodeURIComponent(selectedSR.name)}`)
+        .then(res => res.json())
+        .then(data => {
+          let html = `<div class="table-container"><table><thead><tr>
+            <th>Customer Name</th><th>Relation</th><th>Phone</th><th>Email</th><th>SR ID</th><th>SR Name</th>
+            <th>Voucher No</th><th>Joining Date</th><th>Redeem Date</th><th>No of Kits</th><th>Product Details</th>
+            <th>Points/M</th><th>Points 12M</th><th>Bank</th><th>Branch</th><th>Acc No</th><th>IFSC</th>`;
+          for(let i=1; i<=12; i++) html += `<th>P${i}</th>`;
+          html += `</tr></thead><tbody>`;
+
+          data.forEach(r => {
+            html += `<tr>
+              <td>${r.custName}</td><td>${r.relation}</td><td>${r.phone}</td><td>${r.email}</td>
+              <td>${r.srId}</td><td>${r.srName}</td><td>${r.voucherNo}</td><td>${r.joiningDate}</td>
+              <td>${r.redeemDate}</td><td>${r.noOfKits}</td><td>${r.productDetails}</td>
+              <td>${r.pointsMonth}</td><td>${r.points12M}</td><td>${r.bank}</td><td>${r.branch}</td>
+              <td>${r.accNo}</td><td>${r.ifsc}</td>`;
+            for(let p=1; p<=12; p++) html += `<td align="center"><input type="checkbox" onchange="togglePaid(this)"></td>`;
+            html += `</tr>`;
+          });
+          html += `</tbody></table></div>`;
+          document.getElementById('category-content').innerHTML = html;
+        });
+    }
+
+    function renderBTP() {
+      fetch(`${WEB_APP_URL}?action=getBTPInvoiceData&srName=${encodeURIComponent(selectedSR.name)}`)
+        .then(res => res.json())
+        .then(data => {
+          let html = `<div class="table-container"><table><thead><tr>
+            <th>Customer Name</th><th>Relation</th><th>Phone</th><th>SR ID</th><th>SR Name</th>
+            <th>Voucher No</th><th>Redeem Date</th><th>Joining Date</th><th>No of Kits</th><th>Product Details</th>
+            <th>Points/M</th><th>Points 12M</th><th>Bank</th><th>Branch</th><th>Acc No</th><th>IFSC</th>`;
+          for(let i=1; i<=12; i++) html += `<th>P${i}</th>`;
+          html += `</tr></thead><tbody>`;
+
+          data.forEach(r => {
+            html += `<tr>
+              <td>${r.custName}</td><td>${r.relation}</td><td>${r.phone}</td>
+              <td>${r.srId}</td><td>${r.srName}</td><td>${r.voucherNo}</td><td>${r.redeemDate}</td>
+              <td>${r.joiningDate}</td><td>${r.noOfKits}</td><td>${r.productDetails}</td>
+              <td>${r.pointsMonth}</td><td>${r.points12M}</td><td>${r.bank}</td><td>${r.branch}</td>
+              <td>${r.accNo}</td><td>${r.ifsc}</td>`;
+            for(let p=1; p<=12; p++) html += `<td align="center"><input type="checkbox" onchange="togglePaid(this)"></td>`;
+            html += `</tr>`;
+          });
+          html += `</tbody></table></div>`;
+          document.getElementById('category-content').innerHTML = html;
+        });
+    }
+  </script>
+</body>
+</html>
