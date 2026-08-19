@@ -80,13 +80,8 @@
       font-weight: bold;
       margin-top: 10px;
     }
-    .btn:hover {
-      background: var(--primary-light);
-    }
-    .btn:disabled {
-      background: #cccccc;
-      cursor: not-allowed;
-    }
+    .btn:hover { background: var(--primary-light); }
+    .btn:disabled { background: #cccccc; cursor: not-allowed; }
 
     header {
       background: var(--primary);
@@ -116,14 +111,8 @@
       cursor: pointer;
     }
 
-    .dashboard {
-      padding: 20px 40px;
-    }
-    .cards-container {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
+    .dashboard { padding: 20px 40px; }
+    .cards-container { display: flex; gap: 20px; margin-bottom: 30px; }
     .card {
       background: white;
       padding: 20px;
@@ -132,17 +121,8 @@
       flex: 1;
       border-left: 5px solid var(--primary);
     }
-    .card h3 {
-      margin: 0;
-      font-size: 14px;
-      color: #666;
-    }
-    .card p {
-      margin: 10px 0 0;
-      font-size: 24px;
-      font-weight: bold;
-      color: var(--primary);
-    }
+    .card h3 { margin: 0; font-size: 14px; color: #666; }
+    .card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--primary); }
 
     .sr-grid {
       display: grid;
@@ -159,16 +139,9 @@
       text-align: center;
       transition: transform 0.2s;
     }
-    .sr-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--primary);
-    }
+    .sr-card:hover { transform: translateY(-3px); border-color: var(--primary); }
 
-    .tab-bar {
-      display: flex;
-      gap: 10px;
-      margin: 20px 0;
-    }
+    .tab-bar { display: flex; gap: 10px; margin: 20px 0; }
     .tab-btn {
       padding: 10px 20px;
       background: #e0e0e0;
@@ -177,10 +150,7 @@
       cursor: pointer;
       font-weight: bold;
     }
-    .tab-btn.active {
-      background: var(--primary);
-      color: white;
-    }
+    .tab-btn.active { background: var(--primary); color: white; }
 
     .table-container {
       overflow-x: auto;
@@ -189,33 +159,13 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       margin-bottom: 30px;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #e0e0e0;
-      text-align: left;
-    }
-    th {
-      background: var(--primary);
-      color: white;
-      white-space: nowrap;
-    }
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
-    .p-cell-highlight {
-      background: #c8e6c9 !important;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px; border: 1px solid #e0e0e0; text-align: left; }
+    th { background: var(--primary); color: white; white-space: nowrap; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .p-cell-highlight { background: #c8e6c9 !important; }
 
-    .wa-link {
-      color: #25D366;
-      font-weight: bold;
-      text-decoration: none;
-    }
+    .wa-link { color: #25D366; font-weight: bold; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -249,9 +199,7 @@
 
   <div id="app-view" style="display:none;">
     <header>
-      <div>
-        <h2 style="margin:0; font-size: 18px;">BEULAH TRADERS PRIVATE LIMITED</h2>
-      </div>
+      <div><h2 style="margin:0; font-size: 18px;">BEULAH TRADERS PRIVATE LIMITED</h2></div>
       <div class="profile-section">
         <img id="user-photo" src="https://via.placeholder.com/40" class="profile-img" alt="Profile">
         <div>
@@ -291,12 +239,37 @@
   </div>
 
   <script>
-    // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT EXEC URL HERE:
+    // EDIT YOUR APPS SCRIPT EXEC URL HERE
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby0VwJGk0xckmZQn3Oy9u2Rirp5T863WHsf9WCAd0p0_c3LPUMYr1CkUAXxyJ0VyCHU/exec";
 
     let currentUser = null;
     let selectedSR = null;
     let currentCategory = 'HPBM';
+
+    // JSONP Helper function to bypass cross-origin restrictions
+    function callAppsScript(params) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
+        window[callbackName] = function(data) {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          resolve(data);
+        };
+
+        const script = document.createElement('script');
+        let queryStr = '?callback=' + callbackName;
+        for (let key in params) {
+          queryStr += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+        }
+        script.src = WEB_APP_URL + queryStr;
+        script.onerror = () => {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          reject(new Error("Network Error/Failed to fetch"));
+        };
+        document.body.appendChild(script);
+      });
+    }
 
     const canvas = document.getElementById('flower-canvas');
     const ctx = canvas.getContext('2d');
@@ -345,24 +318,21 @@
       btn.disabled = true;
       btn.innerText = "Authenticating...";
 
-      fetch(`${WEB_APP_URL}?action=authenticateUser&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
-        .then(res => res.json())
+      callAppsScript({ action: 'authenticateUser', username: u, password: p })
         .then(res => {
           if(res.success) {
             currentUser = res.user;
-            fetch(`${WEB_APP_URL}?action=sendOTP&email=${encodeURIComponent(currentUser.email)}`)
-              .then(() => {
-                document.getElementById('credentials-step').style.display = 'none';
-                document.getElementById('otp-step').style.display = 'block';
-              });
+            return callAppsScript({ action: 'sendOTP', email: currentUser.email });
           } else {
-            alert(res.message || "Authentication failed.");
-            btn.disabled = false;
-            btn.innerText = "Send OTP";
+            throw new Error(res.message || "Authentication failed.");
           }
         })
+        .then(() => {
+          document.getElementById('credentials-step').style.display = 'none';
+          document.getElementById('otp-step').style.display = 'block';
+        })
         .catch(err => {
-          alert("Error connecting to backend: " + err.message);
+          alert(err.message);
           btn.disabled = false;
           btn.innerText = "Send OTP";
         });
@@ -380,8 +350,7 @@
       btn.disabled = true;
       btn.innerText = "Verifying...";
 
-      fetch(`${WEB_APP_URL}?action=verifyOTP&email=${encodeURIComponent(currentUser.email)}&otp=${encodeURIComponent(otp)}`)
-        .then(res => res.json())
+      callAppsScript({ action: 'verifyOTP', email: currentUser.email, otp: otp })
         .then(res => {
           if(res.success) {
             document.getElementById('login-view').style.display = 'none';
@@ -390,13 +359,11 @@
             setupProfile();
             loadSRList();
           } else {
-            alert(res.message || "Verification failed.");
-            btn.disabled = false;
-            btn.innerText = "Verify & Login";
+            throw new Error(res.message || "Verification failed.");
           }
         })
         .catch(err => {
-          alert("Error verifying OTP: " + err.message);
+          alert(err.message);
           btn.disabled = false;
           btn.innerText = "Verify & Login";
         });
@@ -412,18 +379,15 @@
       }
     }
 
-    function signOut() {
-      location.reload();
-    }
+    function signOut() { location.reload(); }
 
     function loadSRList() {
-      fetch(`${WEB_APP_URL}?action=getSRList`)
-        .then(res => res.json())
-        .then(list => {
+      callAppsScript({ action: 'getSRList' })
+        .then(res => {
           const grid = document.getElementById('sr-grid');
           grid.innerHTML = '';
-          if (Array.isArray(list)) {
-            list.forEach(sr => {
+          if (res.success && Array.isArray(res.list)) {
+            res.list.forEach(sr => {
               const card = document.createElement('div');
               card.className = 'sr-card';
               card.innerHTML = `<strong>${sr.name}</strong><br><small>ID: ${sr.id}</small>`;
@@ -456,8 +420,7 @@
     }
 
     function renderHPBM() {
-      fetch(`${WEB_APP_URL}?action=getHPBMData&sheetName=${encodeURIComponent(selectedSR.fullSheetName)}`)
-        .then(res => res.json())
+      callAppsScript({ action: 'getHPBMData', sheetName: selectedSR.fullSheetName })
         .then(data => {
           let html = `<h4>15TH PAYMENTS</h4>` + buildHPBMTable(data.day15, '15TH');
           html += `<h4 style="margin-top:30px;">30TH PAYMENTS</h4>` + buildHPBMTable(data.day30, '30TH');
@@ -519,12 +482,7 @@
     }
 
     function togglePaid(cb) {
-      const cell = cb.parentElement;
-      if(cb.checked) {
-        cell.classList.add('p-cell-highlight');
-      } else {
-        cell.classList.remove('p-cell-highlight');
-      }
+      cb.parentElement.classList.toggle('p-cell-highlight', cb.checked);
     }
 
     function generateWAMessage(r, cycle) {
@@ -532,9 +490,8 @@
     }
 
     function renderRenewal() {
-      fetch(`${WEB_APP_URL}?action=getRenewalData&srName=${encodeURIComponent(selectedSR.name)}`)
-        .then(res => res.json())
-        .then(data => {
+      callAppsScript({ action: 'getRenewalData', srName: selectedSR.name })
+        .then(res => {
           let html = `<div class="table-container"><table><thead><tr>
             <th>Customer Name</th><th>Relation</th><th>Phone</th><th>Email</th><th>SR ID</th><th>SR Name</th>
             <th>Voucher No</th><th>Joining Date</th><th>Redeem Date</th><th>No of Kits</th><th>Product Details</th>
@@ -542,7 +499,7 @@
           for(let i=1; i<=12; i++) html += `<th>P${i}</th>`;
           html += `</tr></thead><tbody>`;
 
-          data.forEach(r => {
+          (res.data || []).forEach(r => {
             html += `<tr>
               <td>${r.custName}</td><td>${r.relation}</td><td>${r.phone}</td><td>${r.email}</td>
               <td>${r.srId}</td><td>${r.srName}</td><td>${r.voucherNo}</td><td>${r.joiningDate}</td>
@@ -558,9 +515,8 @@
     }
 
     function renderBTP() {
-      fetch(`${WEB_APP_URL}?action=getBTPInvoiceData&srName=${encodeURIComponent(selectedSR.name)}`)
-        .then(res => res.json())
-        .then(data => {
+      callAppsScript({ action: 'getBTPInvoiceData', srName: selectedSR.name })
+        .then(res => {
           let html = `<div class="table-container"><table><thead><tr>
             <th>Customer Name</th><th>Relation</th><th>Phone</th><th>SR ID</th><th>SR Name</th>
             <th>Voucher No</th><th>Redeem Date</th><th>Joining Date</th><th>No of Kits</th><th>Product Details</th>
@@ -568,7 +524,7 @@
           for(let i=1; i<=12; i++) html += `<th>P${i}</th>`;
           html += `</tr></thead><tbody>`;
 
-          data.forEach(r => {
+          (res.data || []).forEach(r => {
             html += `<tr>
               <td>${r.custName}</td><td>${r.relation}</td><td>${r.phone}</td>
               <td>${r.srId}</td><td>${r.srName}</td><td>${r.voucherNo}</td><td>${r.redeemDate}</td>
