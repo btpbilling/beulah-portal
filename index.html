@@ -20,7 +20,6 @@
       overflow-x: hidden;
     }
 
-    /* Falling Flowers Canvas */
     #flower-canvas {
       position: fixed;
       top: 0;
@@ -31,13 +30,14 @@
       z-index: 999;
     }
 
-    /* Login Screen */
     .login-container {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       background: linear-gradient(135deg, #1b5e20, #003300);
+      position: relative;
+      z-index: 1000;
     }
     .login-card {
       background: rgba(255, 255, 255, 0.95);
@@ -83,8 +83,11 @@
     .btn:hover {
       background: var(--primary-light);
     }
+    .btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
 
-    /* Header Bar */
     header {
       background: var(--primary);
       color: white;
@@ -113,7 +116,6 @@
       cursor: pointer;
     }
 
-    /* Dashboard */
     .dashboard {
       padding: 20px 40px;
     }
@@ -142,7 +144,6 @@
       color: var(--primary);
     }
 
-    /* SR List and Tabs */
     .sr-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -163,7 +164,6 @@
       border-color: var(--primary);
     }
 
-    /* Category Navigation */
     .tab-bar {
       display: flex;
       gap: 10px;
@@ -182,7 +182,6 @@
       color: white;
     }
 
-    /* Table Design */
     .table-container {
       overflow-x: auto;
       background: white;
@@ -212,7 +211,6 @@
       background: #c8e6c9 !important;
     }
 
-    /* WhatsApp Queue Link */
     .wa-link {
       color: #25D366;
       font-weight: bold;
@@ -224,7 +222,6 @@
 
   <canvas id="flower-canvas"></canvas>
 
-  <!-- LOGIN SCREEN -->
   <div id="login-view" class="login-container">
     <div class="login-card">
       <h2>BEULAH TRADERS PRIVATE LIMITED</h2>
@@ -237,7 +234,7 @@
           <label>Password</label>
           <input type="password" id="password" placeholder="Enter Password">
         </div>
-        <button class="btn" onclick="handleLogin()">Send OTP</button>
+        <button id="send-otp-btn" class="btn" onclick="handleLogin()">Send OTP</button>
       </div>
 
       <div id="otp-step" style="display:none;">
@@ -245,19 +242,18 @@
           <label>Enter Email OTP</label>
           <input type="text" id="otp-input" placeholder="6-digit OTP">
         </div>
-        <button class="btn" onclick="verifyOTP()">Verify & Login</button>
+        <button id="verify-otp-btn" class="btn" onclick="verifyOTP()">Verify & Login</button>
       </div>
     </div>
   </div>
 
-  <!-- MAIN APP PORTAL -->
   <div id="app-view" style="display:none;">
     <header>
       <div>
         <h2 style="margin:0; font-size: 18px;">BEULAH TRADERS PRIVATE LIMITED</h2>
       </div>
       <div class="profile-section">
-        <img id="user-photo" src="" class="profile-img" alt="Profile">
+        <img id="user-photo" src="https://via.placeholder.com/40" class="profile-img" alt="Profile">
         <div>
           <div id="user-name" style="font-weight:bold;"></div>
           <div id="user-role" style="font-size:11px; opacity:0.8;"></div>
@@ -267,7 +263,6 @@
     </header>
 
     <div class="dashboard">
-      <!-- SUMMARY CARDS -->
       <div class="cards-container">
         <div class="card">
           <h3>TOTAL PAYOUTS</h3>
@@ -279,11 +274,9 @@
         </div>
       </div>
 
-      <!-- SR SELECTION -->
       <h3>Sales Representatives</h3>
       <div id="sr-grid" class="sr-grid"></div>
 
-      <!-- CATEGORY TABS -->
       <div id="category-section" style="display:none; margin-top:30px;">
         <h3 id="selected-sr-title"></h3>
         <div class="tab-bar">
@@ -292,21 +285,19 @@
           <button class="tab-btn" onclick="switchCategory('BTP', event)">BTP</button>
         </div>
 
-        <!-- CONTENT VIEW AREA -->
         <div id="category-content"></div>
       </div>
     </div>
   </div>
 
   <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP DEPLOYMENT URL HERE:
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby0VwJGk0xckmZQn3Oy9u2Rirp5T863WHsf9WCAd0p0_c3LPUMYr1CkUAXxyJ0VyCHU/exec";
+    // PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT EXEC URL HERE:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby0VwJGk0xckmZQn3Oy9u2Rirp5T863WHsf9WCAd0p0_c3LPUMYr1CkUAXxyJ0VyCHU/execR_DEPLOYMENT_ID_HERE/exec";
 
     let currentUser = null;
     let selectedSR = null;
     let currentCategory = 'HPBM';
 
-    // --- FALLING FLOWERS ANIMATION ---
     const canvas = document.getElementById('flower-canvas');
     const ctx = canvas.getContext('2d');
     let width = canvas.width = window.innerWidth;
@@ -341,65 +332,105 @@
     }
     drawPetals();
 
-    // --- AUTH FLOW VIA FETCH ---
     function handleLogin() {
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
+      const btn = document.getElementById('send-otp-btn');
+
+      if (!u || !p) {
+        alert("Please enter both username and password.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Authenticating...";
 
       fetch(`${WEB_APP_URL}?action=authenticateUser&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`)
         .then(res => res.json())
         .then(res => {
           if(res.success) {
             currentUser = res.user;
-            fetch(`${WEB_APP_URL}?action=sendOTP&email=${encodeURIComponent(currentUser.email)}`);
-            document.getElementById('credentials-step').style.display = 'none';
-            document.getElementById('otp-step').style.display = 'block';
+            fetch(`${WEB_APP_URL}?action=sendOTP&email=${encodeURIComponent(currentUser.email)}`)
+              .then(() => {
+                document.getElementById('credentials-step').style.display = 'none';
+                document.getElementById('otp-step').style.display = 'block';
+              });
           } else {
-            alert(res.message);
+            alert(res.message || "Authentication failed.");
+            btn.disabled = false;
+            btn.innerText = "Send OTP";
           }
+        })
+        .catch(err => {
+          alert("Error connecting to backend: " + err.message);
+          btn.disabled = false;
+          btn.innerText = "Send OTP";
         });
     }
 
     function verifyOTP() {
       const otp = document.getElementById('otp-input').value;
+      const btn = document.getElementById('verify-otp-btn');
+
+      if (!otp) {
+        alert("Please enter the OTP.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Verifying...";
+
       fetch(`${WEB_APP_URL}?action=verifyOTP&email=${encodeURIComponent(currentUser.email)}&otp=${encodeURIComponent(otp)}`)
         .then(res => res.json())
         .then(res => {
           if(res.success) {
             document.getElementById('login-view').style.display = 'none';
+            document.getElementById('flower-canvas').style.display = 'none';
             document.getElementById('app-view').style.display = 'block';
             setupProfile();
             loadSRList();
           } else {
-            alert(res.message);
+            alert(res.message || "Verification failed.");
+            btn.disabled = false;
+            btn.innerText = "Verify & Login";
           }
+        })
+        .catch(err => {
+          alert("Error verifying OTP: " + err.message);
+          btn.disabled = false;
+          btn.innerText = "Verify & Login";
         });
     }
 
     function setupProfile() {
-      document.getElementById('user-name').innerText = currentUser.name;
-      document.getElementById('user-role').innerText = currentUser.role;
-      document.getElementById('user-photo').src = currentUser.photo || 'https://via.placeholder.com/40';
+      if (currentUser) {
+        document.getElementById('user-name').innerText = currentUser.name || "User";
+        document.getElementById('user-role').innerText = currentUser.role || "";
+        if (currentUser.photo) {
+          document.getElementById('user-photo').src = currentUser.photo;
+        }
+      }
     }
 
     function signOut() {
       location.reload();
     }
 
-    // --- MAIN DASHBOARD & SR SELECTION ---
     function loadSRList() {
       fetch(`${WEB_APP_URL}?action=getSRList`)
         .then(res => res.json())
         .then(list => {
           const grid = document.getElementById('sr-grid');
           grid.innerHTML = '';
-          list.forEach(sr => {
-            const card = document.createElement('div');
-            card.className = 'sr-card';
-            card.innerHTML = `<strong>${sr.name}</strong><br><small>ID: ${sr.id}</small>`;
-            card.onclick = () => selectSR(sr);
-            grid.appendChild(card);
-          });
+          if (Array.isArray(list)) {
+            list.forEach(sr => {
+              const card = document.createElement('div');
+              card.className = 'sr-card';
+              card.innerHTML = `<strong>${sr.name}</strong><br><small>ID: ${sr.id}</small>`;
+              card.onclick = () => selectSR(sr);
+              grid.appendChild(card);
+            });
+          }
         });
     }
 
@@ -424,7 +455,6 @@
       else if (cat === 'BTP') renderBTP();
     }
 
-    // --- CATEGORY RENDERERS ---
     function renderHPBM() {
       fetch(`${WEB_APP_URL}?action=getHPBMData&sheetName=${encodeURIComponent(selectedSR.fullSheetName)}`)
         .then(res => res.json())
@@ -478,7 +508,6 @@
         tableHtml += `</tr>`;
       });
 
-      // Total Row
       tableHtml += `<tr style="font-weight:bold; background:#e8f5e9;">
         <td colspan="5">TOTALS</td>
         <td>${totalSumIds}</td>
